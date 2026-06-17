@@ -1,0 +1,54 @@
+<!-- 示例 widget_code：旅行规划（对应调研文档 §6.2 的原始示例） -->
+<form class="clarify">
+  <div class="clarify-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 11l19-9-9 19-2-8-8-2z" />
+    </svg>
+    <span>Plan your trip</span>
+    <button type="button" class="clarify-close" aria-label="Close">×</button>
+  </div>
+
+  <div class="clarify-body">
+    <div class="clarify-field">
+      <label class="clarify-label">Destination</label>
+      <div class="clarify-pills" data-multi="false" data-name="destination">
+        <button type="button" class="clarify-pill selected" data-value="Tokyo">Tokyo</button>
+        <button type="button" class="clarify-pill" data-value="Kyoto">Kyoto</button>
+        <button type="button" class="clarify-pill" data-value="Osaka">Osaka</button>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">Interests</label>
+      <div class="clarify-pills" data-multi="true" data-name="interests">
+        <button type="button" class="clarify-pill selected" data-value="Food">Food</button>
+        <button type="button" class="clarify-pill selected" data-value="Culture">Culture</button>
+        <button type="button" class="clarify-pill selected" data-value="Nature">Nature</button>
+        <button type="button" class="clarify-pill" data-value="Nightlife">Nightlife</button>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">Departure date</label>
+      <div class="clarify-date">
+        <input type="date" data-name="depart" value="2026-05-12" />
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">Budget (USD)</label>
+      <div class="clarify-range">
+        <input type="range" data-name="budget"
+               min="5000" max="80000" step="1000" value="30000"
+               data-format="thousands" />
+        <output class="clarify-range-value"></output>
+      </div>
+    </div>
+  </div>
+
+  <div class="clarify-footer">
+    <button type="button" class="clarify-skip">Skip</button>
+    <button type="button" class="clarify-submit">Continue</button>
+  </div>
+</form>

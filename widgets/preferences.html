@@ -1,0 +1,44 @@
+<!-- 示例 widget_code：内容偏好收集（展示 单选 + 多选 + other 输入） -->
+<form class="clarify">
+  <div class="clarify-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 18v-6a9 9 0 0118 0v6" />
+      <path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z" />
+    </svg>
+    <span>Your preferences</span>
+    <button type="button" class="clarify-close" aria-label="Close">×</button>
+  </div>
+
+  <div class="clarify-body">
+    <div class="clarify-field">
+      <label class="clarify-label">Preferred length</label>
+      <div class="clarify-pills" data-multi="false" data-name="length">
+        <button type="button" class="clarify-pill" data-value="Short">Short</button>
+        <button type="button" class="clarify-pill selected" data-value="Medium">Medium</button>
+        <button type="button" class="clarify-pill" data-value="In-depth">In-depth</button>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">Topics you enjoy</label>
+      <div class="clarify-pills" data-multi="true" data-name="topics">
+        <button type="button" class="clarify-pill" data-value="Tech">Tech</button>
+        <button type="button" class="clarify-pill" data-value="Design">Design</button>
+        <button type="button" class="clarify-pill" data-value="Business">Business</button>
+        <button type="button" class="clarify-pill" data-value="Science">Science</button>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">Anything else you're into?</label>
+      <input type="text" class="clarify-other" data-name="other_topic"
+             placeholder="e.g. photography, music…" />
+    </div>
+  </div>
+
+  <div class="clarify-footer">
+    <button type="button" class="clarify-skip">Skip</button>
+    <button type="button" class="clarify-submit">Continue</button>
+  </div>
+</form>
