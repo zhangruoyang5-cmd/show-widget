@@ -1,0 +1,47 @@
+<!-- 示例 widget_code：快速反馈（展示 滑块/Likert + 日期 + 文本域） -->
+<form class="clarify">
+  <div class="clarify-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+    </svg>
+    <span>Quick feedback</span>
+    <button type="button" class="clarify-close" aria-label="Close">×</button>
+  </div>
+
+  <div class="clarify-body">
+    <div class="clarify-field">
+      <label class="clarify-label">How satisfied are you? (1–5)</label>
+      <div class="clarify-range">
+        <input type="range" data-name="satisfaction" min="1" max="5" step="1" value="4" />
+        <output class="clarify-range-value"></output>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">How likely to recommend? (0–10)</label>
+      <div class="clarify-range">
+        <input type="range" data-name="nps" min="0" max="10" step="1" value="8" />
+        <output class="clarify-range-value"></output>
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">When did you try it?</label>
+      <div class="clarify-date">
+        <input type="date" data-name="tried_on" />
+      </div>
+    </div>
+
+    <div class="clarify-field">
+      <label class="clarify-label">What could be better?</label>
+      <textarea class="clarify-textarea" data-name="comment" rows="3"
+                placeholder="Optional — your thoughts…"></textarea>
+    </div>
+  </div>
+
+  <div class="clarify-footer">
+    <button type="button" class="clarify-skip">Skip</button>
+    <button type="button" class="clarify-submit">Continue</button>
+  </div>
+</form>

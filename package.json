@@ -1,0 +1,30 @@
+{
+  "name": "kimi-widget",
+  "version": "0.1.0",
+  "description": "对话内嵌可交互 HTML 组件（澄清表单）系统：模型通过 show_widget 生成纯 HTML，宿主在 sandboxed iframe 中渲染，用户点选后结果序列化为 user message 回流。",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "widget",
+    "kimi",
+    "moonshot",
+    "llm",
+    "tool-calling",
+    "clarify-form"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "openai": "^4.77.0"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
