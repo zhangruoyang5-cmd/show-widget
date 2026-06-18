@@ -208,22 +208,25 @@
       }, 1400);
     }
 
+    // 必须在 frame 连接到 DOM 后「同步」注册路由：iframe 内 widget.js 会在自己的
+    // DOMContentLoaded 即 postMessage 上报高度，这早于宿主 iframe 的 load 事件。
+    // 若改在 load 里注册，首个高度消息会因 frameRegistry 尚无该 source 而被丢弃，
+    // iframe 卡在默认 120px —— 表现为「只渲染一半，点一下就无法再交互」。
+    function registerFrame(frame) {
+      if (frame && frame.contentWindow) frameRegistry.set(frame.contentWindow, controller);
+    }
+
     function placeFrame(frame) {
       if (iframe && iframe.contentWindow) frameRegistry.delete(iframe.contentWindow);
       iframe = frame;
       if (IS_MOBILE.matches) {
-        // 移动端：iframe 放进全屏遮罩，气泡里显示启动按钮
+        // 移动端：iframe 此刻尚未入 DOM，待点击启动按钮放进全屏遮罩后再注册
         launch.disabled = false;
-        launch.onclick = function () { openOverlay(frame); };
+        launch.onclick = function () { openOverlay(frame); registerFrame(frame); };
       } else {
         inlineHost.appendChild(frame);
+        registerFrame(frame);
       }
-      // 注册以便 postMessage 路由
-      frame.addEventListener("load", function () {
-        if (frame.contentWindow) {
-          frameRegistry.set(frame.contentWindow, controller);
-        }
-      });
     }
 
     var controller = {
@@ -250,9 +253,7 @@
           if (iframe && iframe.parentNode === inlineHost) inlineHost.replaceChild(f, iframe);
           else inlineHost.appendChild(f);
           iframe = f;
-          f.addEventListener("load", function () {
-            if (f.contentWindow) frameRegistry.set(f.contentWindow, controller);
-          });
+          registerFrame(f);
         } else {
           placeFrame(f);
         }
