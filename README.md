@@ -112,3 +112,9 @@ Form submitted:
 - 不含账号体系、持久化、多会话存储（演示聚焦单会话链路）。
 - 不含 CI / 自动上线。
 - 一次澄清通常只触发一个 widget；多步决策树不适合用 widget（见 skill 文档）。
+
+## 安全与公开部署提示
+
+此仓库是参考演示，而非可直接用于公开服务的生产系统。静态文件由显式白名单提供，`.env`、`server.js` 等非公开文件不应被 HTTP 访问。在将在线聊天 API 暴露到公网前，仍须添加身份验证、请求频率限制、会话清理、模型费用保护与更严格的 HTML 安全策略。详见 [SECURITY.md](SECURITY.md)。
+
+如希望在自己的 AI Chat 应用中实现类似交互，可参考 [Widget Skill](docs/widget-skill.md) 和 [HTML Contract](docs/widget-code-spec.md)；这是一个需要宿主应用集成的参考实现，并不是通用 AI 聊天客户端即装即用的插件。
