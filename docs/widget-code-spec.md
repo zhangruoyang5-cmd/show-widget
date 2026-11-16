@@ -1,25 +1,21 @@
-# `widget_code` HTML 契约
+# `widget_code` HTML Contract
 
-`widget_code` 是模型产出、宿主在 sandboxed iframe 中渲染的**纯 HTML**。它只描述结构与语义，
-**不含任何样式与脚本**——外观来自预加载的设计系统（`src/design-system.css`），交互来自宿主
-注入的 `src/widget.js`（依据 class 与 `data-*` 代理）。手写示例（`widgets/*.html`）与模型产出走
-完全相同的渲染/序列化路径，因此两者可互换。
+The model returns **pure structural HTML** in `widget_code`. The host renders it in a sandboxed iframe, injects `src/design-system.css` for styling and `src/widget.js` for delegated interactivity, and forwards submissions as user messages. Offline examples in `widgets/*.html` use the same code path.
 
----
-
-## 1. 外层骨架
+## 1. Form skeleton
 
 ```html
 <form class="clarify">
   <div class="clarify-header">
-    <span>表单标题</span>
+    <span>Form title</span>
     <button type="button" class="clarify-close" aria-label="Close">×</button>
   </div>
-
   <div class="clarify-body">
-    <!-- 若干 .clarify-field -->
+    <div class="clarify-field">
+      <label class="clarify-label">Question</label>
+      <!-- One control with a data-name attribute -->
+    </div>
   </div>
-
   <div class="clarify-footer">
     <button type="button" class="clarify-skip">Skip</button>
     <button type="button" class="clarify-submit">Continue</button>
@@ -27,115 +23,81 @@
 </form>
 ```
 
-- `clarify-close`（×）与 `clarify-skip` 行为相同：发送 dismissed 文案。
-- `clarify-submit`：收集所有 `[data-name]` 的当前值并序列化提交。
+Use a short, lowercase English key for each `data-name`, such as `destination`. **Close** and **Skip** send the same dismissal message; **Continue** submits values.
 
-每个问题组：
+## 2. Supported fields
 
-```html
-<div class="clarify-field">
-  <label class="clarify-label">问题文案</label>
-  <!-- 一个带 data-name 的组件 -->
-</div>
-```
-
-`data-name` 的值 = 回流 bullet 的字段名（小写英文短词，如 `destination`）。
-
----
-
-## 2. 组件清单
-
-### 2.1 单选胶囊 `.clarify-pills[data-multi="false"]`
+### Single-choice pills
 
 ```html
 <div class="clarify-field">
-  <label class="clarify-label">Trip length</label>
-  <div class="clarify-pills" data-multi="false" data-name="length">
-    <button type="button" class="clarify-pill" data-value="Weekend">Weekend</button>
-    <button type="button" class="clarify-pill" data-value="One week">One week</button>
-    <button type="button" class="clarify-pill" data-value="Two weeks">Two weeks</button>
+  <label class="clarify-label">Destination</label>
+  <div class="clarify-pills" data-multi="false" data-name="destination">
+    <button type="button" class="clarify-pill" data-value="Tokyo">Tokyo</button>
+    <button type="button" class="clarify-pill" data-value="Kyoto">Kyoto</button>
   </div>
 </div>
 ```
-点击互斥选中；提交值 = 选中胶囊的 `data-value`。
 
-### 2.2 多选胶囊 `.clarify-pills[data-multi="true"]`
+Only one choice stays selected. The value is the selected button's `data-value`.
+
+### Multiple-choice pills
 
 ```html
 <div class="clarify-field">
   <label class="clarify-label">Interests</label>
   <div class="clarify-pills" data-multi="true" data-name="interests">
-    <button type="button" class="clarify-pill" data-value="Food">Food</button>
+    <button type="button" class="clarify-pill selected" data-value="Food">Food</button>
     <button type="button" class="clarify-pill" data-value="Culture">Culture</button>
-    <button type="button" class="clarify-pill" data-value="Nature">Nature</button>
-    <button type="button" class="clarify-pill" data-value="Nightlife">Nightlife</button>
   </div>
 </div>
 ```
-可多选；提交值 = 选中项 `data-value` 以 `, ` 连接（如 `Food, Culture, Nature`）。
 
-### 2.3 滑块 `.clarify-range`
+More than one choice can be selected. Selected values are joined with `, `. The `selected` class preselects an option.
 
-```html
-<div class="clarify-field">
-  <label class="clarify-label">Budget (USD)</label>
-  <div class="clarify-range">
-    <input type="range" data-name="budget"
-           min="5000" max="80000" step="1000" value="30000"
-           data-format="thousands">
-    <output class="clarify-range-value"></output>
-  </div>
-</div>
-```
-提交值 = `input.value`。可选 `data-format="thousands"` 让显示与提交值带千分位（`30,000`）。
-`<output class="clarify-range-value">` 用于实时显示当前值（由 widget.js 填充）。
-
-### 2.4 日期 `.clarify-date`
+### Slider
 
 ```html
-<div class="clarify-field">
-  <label class="clarify-label">Departure date</label>
-  <div class="clarify-date">
-    <input type="date" data-name="depart" value="2026-05-12">
-  </div>
+<div class="clarify-range">
+  <input type="range" data-name="budget" min="5000" max="80000"
+         step="1000" value="30000" data-format="thousands">
+  <output class="clarify-range-value"></output>
 </div>
 ```
-提交值 = `input.value`（`YYYY-MM-DD`）。
 
-### 2.5 文本域 `.clarify-textarea`
+The value comes from `input.value`. Optional `data-format="thousands"` displays and serializes the value with comma separators.
+
+### Date
 
 ```html
-<div class="clarify-field">
-  <label class="clarify-label">Anything else?</label>
-  <textarea class="clarify-textarea" data-name="notes"
-            rows="3" placeholder="Optional details…"></textarea>
+<div class="clarify-date">
+  <input type="date" data-name="depart" value="2026-05-12">
 </div>
 ```
-提交值 = `textarea.value`。
 
-### 2.6 其他输入 `.clarify-other`
+The value uses `YYYY-MM-DD`.
+
+### Free text
 
 ```html
-<div class="clarify-field">
-  <label class="clarify-label">Other destination</label>
-  <input type="text" class="clarify-other" data-name="destination_other"
-         placeholder="Type a city…">
-</div>
+<textarea class="clarify-textarea" data-name="notes" rows="3"
+          placeholder="Optional details…"></textarea>
 ```
-当胶囊选项不穷尽时补充；提交值 = `input.value`。
 
----
+### Other text input
 
-## 3. 序列化规则（宿主 widget.js 实现）
-
-点击 **Continue** 时：
-
-1. 按文档顺序遍历所有带 `data-name` 的元素。
-2. 取值：若元素是 `input`/`textarea` 取 `.value`；否则取 `data-value` 属性（胶囊容器由 widget.js 维护）。
-3. **跳过空值**（未选/未填的字段不出现在结果里）。
-4. 拼成 bullet 列表：
-
+```html
+<input type="text" class="clarify-other" data-name="destination_other"
+       placeholder="Type a city…">
 ```
+
+Use these within `.clarify-field` alongside a `.clarify-label`.
+
+## 3. Serialization
+
+On **Continue**, `src/widget.js` traverses all `[data-name]` elements in document order. It reads `value` for inputs and textareas, and `data-value` for pill containers, skipping empty fields.
+
+```text
 Form submitted:
 • destination: Tokyo
 • interests: Food, Culture, Nature
@@ -143,25 +105,16 @@ Form submitted:
 • budget: 30,000
 ```
 
-点击 **Skip / ×** 时发送固定文案：
+On **Skip** or **Close**, it sends:
 
-```
+```text
 (Form dismissed: use your best judgment or just ask me directly)
 ```
 
-结果通过 `postMessage` 回传宿主页，宿主把它作为**下一条 user message** 发给模型。
+The iframe forwards the serialized data using `postMessage`; the host then sends it to the model as the **next user message**, not as the previous tool result.
 
----
+## 4. Restrictions and security
 
-## 4. 严格限制（`sanitizeWidgetCode` 会强制执行）
+Generated code must not contain `<script>`, `<style>`, inline `style=`, `on*` handler attributes, fixed positioning, tabs, carousels, or hidden decision branches. The host strips scripts, styles, and inline event handlers. Styling and interactions belong to the host's controlled assets.
 
-| 禁止 | 原因 | 宿主处理 |
-| --- | --- | --- |
-| `<script>` | XSS / 越权 | 移除 + console 告警 |
-| `<style>`、内联 `style=` | 破坏设计系统一致性 | 移除 + 告警 |
-| `on*`（onclick 等） | 事件应由 widget.js 代理 | 移除属性 + 告警 |
-| `position: fixed` | 破坏对话内嵌布局 | （随 style 一并移除） |
-| tabs / carousel / 隐藏块 | 一次性清单不需要 | 不提供对应 class |
-
-iframe 以 `sandbox="allow-scripts"`（无 `allow-same-origin`）渲染，无法访问宿主页上下文、
-cookie 或存储；唯一运行的脚本是宿主注入的 `widget.js`。
+The iframe uses `sandbox="allow-scripts"` without `allow-same-origin`, so generated HTML cannot access the parent page's origin, cookies, or storage. The current sanitization is illustrative rather than a comprehensive production security solution.
