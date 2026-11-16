@@ -1,16 +1,16 @@
 /*
- * Kimi Widget — 设计系统（Design System）
+ * Replaceable styles injected into each sandboxed widget iframe.
  * ------------------------------------------------------------------
- * 作用域：被宿主注入到每个 widget 的 sandboxed iframe 内（作为 <style>）。
- * 它为 `widget_code` 里的 .clarify* 语义化标记提供全部外观。
  *
- * 注意：这是一套对调研文档「Kimi 设计系统」描述的**占位诠释版**——
- * 干净的浅色主题、点选友好、即时反馈。接入真实 Kimi 设计系统时，
- * 只需替换本文件（保持下面的 class / data-* 契约不变）即可。
+ *
+ *
+ *
+ *
+ *
  */
 
 :root {
-  /* 颜色 */
+  /* Layout and component styles */
   --ds-bg: #ffffff;
   --ds-surface: #ffffff;
   --ds-surface-soft: #f6f7f9;
@@ -19,24 +19,24 @@
   --ds-muted: #8a909c;
   --ds-border: #e6e8ec;
   --ds-border-strong: #d3d7df;
-  --ds-accent: #5b54ff;          /* Kimi 风的冷紫主色 */
+  --ds-accent: #5b54ff;
   --ds-accent-ink: #ffffff;
   --ds-accent-soft: #eeefff;
   --ds-accent-border: #c8c6ff;
   --ds-danger: #e5484d;
 
-  /* 形状 */
+  /* Layout and component styles */
   --ds-radius: 16px;
   --ds-radius-md: 12px;
   --ds-radius-sm: 9px;
   --ds-radius-pill: 999px;
 
-  /* 阴影与动效 */
+  /* Layout and component styles */
   --ds-shadow: 0 1px 2px rgba(16, 18, 23, 0.04), 0 8px 24px rgba(16, 18, 23, 0.06);
   --ds-ring: 0 0 0 3px var(--ds-accent-soft);
   --ds-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* 字体 */
+  /* Layout and component styles */
   --ds-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -56,7 +56,7 @@ html, body {
 
 body { padding: 2px; }
 
-/* ============================ 容器卡片 ============================ */
+/* Layout and component styles */
 .clarify {
   display: flex;
   flex-direction: column;
@@ -68,7 +68,7 @@ body { padding: 2px; }
   overflow: hidden;
 }
 
-/* ============================ 头部 ============================ */
+/* Layout and component styles */
 .clarify-header {
   display: flex;
   align-items: center;
@@ -103,7 +103,7 @@ body { padding: 2px; }
 }
 .clarify-close:hover { background: var(--ds-surface-soft); color: var(--ds-ink); }
 
-/* ============================ 主体 ============================ */
+/* Layout and component styles */
 .clarify-body {
   display: flex;
   flex-direction: column;
@@ -119,7 +119,7 @@ body { padding: 2px; }
   color: var(--ds-ink-soft);
 }
 
-/* ============================ 胶囊（单/多选） ============================ */
+/* Layout and component styles */
 .clarify-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .clarify-pill {
@@ -145,7 +145,7 @@ body { padding: 2px; }
   font-weight: 600;
 }
 
-/* ============================ 滑块 ============================ */
+/* Layout and component styles */
 .clarify-range { display: flex; align-items: center; gap: 14px; }
 
 .clarify-range input[type="range"] {
@@ -182,7 +182,7 @@ body { padding: 2px; }
   font-size: 15px;
 }
 
-/* ============================ 日期 ============================ */
+/* Layout and component styles */
 .clarify-date input[type="date"] {
   width: 100%;
   font: inherit;
@@ -197,7 +197,7 @@ body { padding: 2px; }
 }
 .clarify-date input[type="date"]:focus { outline: none; border-color: var(--ds-accent); box-shadow: var(--ds-ring); }
 
-/* ============================ 文本域 / 其他输入 ============================ */
+/* Layout and component styles */
 .clarify-textarea,
 .clarify-other {
   width: 100%;
@@ -217,7 +217,7 @@ body { padding: 2px; }
 .clarify-textarea:focus,
 .clarify-other:focus { outline: none; border-color: var(--ds-accent); box-shadow: var(--ds-ring); }
 
-/* ============================ 底部按钮 ============================ */
+/* Layout and component styles */
 .clarify-footer {
   display: flex;
   align-items: center;
@@ -253,7 +253,7 @@ body { padding: 2px; }
 .clarify-skip:focus-visible,
 .clarify-submit:focus-visible { outline: none; box-shadow: var(--ds-ring); }
 
-/* 深色偏好下的轻量适配（保持可读） */
+/* Layout and component styles */
 @media (prefers-color-scheme: dark) {
   :root {
     --ds-bg: #15171c;
