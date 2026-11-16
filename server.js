@@ -1,16 +1,16 @@
 /*
- * server.js — Node 后端（仅依赖 openai）
+ * Node HTTP backend for the streamed show_widget reference demo.
  * ------------------------------------------------------------------------------
- *  - 托管静态前端（/、src/、widgets/、docs/）。
- *  - GET  /api/health  → { configured, model }
- *  - POST /api/chat    → SSE 流式对话循环 + show_widget 工具
  *
- * 链路：浏览器 messages → Moonshot(OpenAI 兼容, stream:true, tools:[show_widget])
- *   - 文本增量 → SSE {type:'text'}
- *   - show_widget 工具调用：按 index 累积 arguments，增量提取 widget_code
+ *  - GET  /api/health  → { configured, model }
+ *
+ *
+ *
+ *
+ *
  *     → SSE {type:'widget_start'} / {type:'widget_delta'} / {type:'widget_end'}
- *   - 工具调用结束后，按 Moonshot 要求 append assistant(tool_calls)+tool(占位结果)
- *     闭合调用，并暂停本轮，等用户填写结果作为下一条 user message 回流。
+ *
+ *
  */
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -21,7 +21,7 @@ import OpenAI from "openai";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/* ---------- 极简 .env 加载（不引 dotenv） ---------- */
+/* Widget implementation details */
 function loadEnv() {
   const f = path.join(__dirname, ".env");
   if (!existsSync(f)) return;
@@ -34,20 +34,20 @@ function loadEnv() {
 }
 loadEnv();
 
-const API_KEY = process.env.MOONSHOT_API_KEY || "";
-const BASE_URL = process.env.MOONSHOT_BASE_URL || "https://api.moonshot.ai/v1";
-const MODEL = process.env.MOONSHOT_MODEL || "kimi-k2.6";
+const API_KEY = process.env.LLM_API_KEY || "";
+const BASE_URL = process.env.LLM_BASE_URL || "https://api.openai.com/v1";
+const MODEL = process.env.LLM_MODEL || "gpt-4o-mini";
 const PORT = Number(process.env.PORT || 5173);
 
 const client = API_KEY ? new OpenAI({ apiKey: API_KEY, baseURL: BASE_URL }) : null;
 
-/* ---------- system prompt：widget skill 单一来源 ---------- */
+/* Widget implementation details */
 const SYSTEM_PROMPT = readFileSync(
   path.join(__dirname, "docs", "widget-skill.md"),
   "utf8"
 );
 
-/* ---------- show_widget 工具定义 ---------- */
+/* Widget implementation details */
 const SHOW_WIDGET_TOOL = {
   type: "function",
   function: {
@@ -83,7 +83,7 @@ const SHOW_WIDGET_TOOL = {
   },
 };
 
-/* ---------- 会话状态（内存，演示用） ---------- */
+/* Widget implementation details */
 const sessions = new Map();
 function getSession(id) {
   if (!sessions.has(id)) {
@@ -93,13 +93,13 @@ function getSession(id) {
 }
 
 /* ====================================================================== *
- *  流式提取 widget_code（从累积的 tool-call arguments JSON 串中）
+ *
  * ====================================================================== */
 function createWidgetExtractor(send) {
   let startSent = false;
   let title = null;
   let loading = null;
-  let valueStart = -1; // widget_code 字符串值在 args 中的起始下标
+  let valueStart = -1;
   let rawPos = -1;
   let decoded = "";
   let emittedLen = 0;
@@ -113,7 +113,7 @@ function createWidgetExtractor(send) {
     }
     if (loading === null) {
       const m = args.match(/"loading_messages"\s*:\s*(\[(?:[^[\]]|\\.)*\])/);
-      if (m) { try { loading = JSON.parse(m[1]); } catch { /* 等更多数据 */ } }
+      if (m) { try { loading = JSON.parse(m[1]); } catch {  } }
     }
   }
 
@@ -134,12 +134,12 @@ function createWidgetExtractor(send) {
   function maybeStart(args) {
     if (startSent) return;
     locateValueStart(args);
-    // 优先等 title 与 loading_messages 都就绪；但 widget_code 一旦开始就不再等（兜底）
+    // Widget lifecycle and state.
     if ((title !== null && loading !== null) || valueStart >= 0) {
       send({
         type: "widget_start",
         title: title || "",
-        loading_messages: loading && loading.length ? loading : ["读取你的需求…", "生成表单…"],
+        loading_messages: loading && loading.length ? loading : ["Reading your request…", "Building your form…"],
       });
       startSent = true;
     }
@@ -151,7 +151,7 @@ function createWidgetExtractor(send) {
       const c = args[rawPos];
       if (escaping) {
         if (c === "u") {
-          if (rawPos + 5 > args.length) break; // 需要 4 位十六进制
+          if (rawPos + 5 > args.length) break;
           decoded += String.fromCharCode(parseInt(args.slice(rawPos + 1, rawPos + 5), 16));
           rawPos += 5;
         } else {
@@ -185,7 +185,7 @@ function createWidgetExtractor(send) {
     },
     finalize(args) {
       if (!startSent) {
-        send({ type: "widget_start", title: title || "", loading_messages: ["读取你的需求…", "生成表单…"] });
+        send({ type: "widget_start", title: title || "", loading_messages: ["Reading your request…", "Building your form…"] });
         startSent = true;
       }
       try {
@@ -194,13 +194,13 @@ function createWidgetExtractor(send) {
           send({ type: "widget_delta", html: obj.widget_code.slice(emittedLen) });
           emittedLen = obj.widget_code.length;
         }
-      } catch { /* arguments 不完整则忽略，以已流出的为准 */ }
+      } catch {  }
     },
   };
 }
 
 /* ====================================================================== *
- *  /api/chat —— 一轮流式对话
+ *
  * ====================================================================== */
 async function handleChat(req, res, body) {
   const sse = (obj) => res.write("data: " + JSON.stringify(obj) + "\n\n");
@@ -212,14 +212,14 @@ async function handleChat(req, res, body) {
   });
 
   if (!client) {
-    sse({ type: "error", message: "后端未配置 MOONSHOT_API_KEY。" });
+    sse({ type: "error", message: "Server API key is not configured (LLM_API_KEY)." });
     sse({ type: "done" });
     return res.end();
   }
 
   const { sessionId, message } = body || {};
   if (!sessionId || typeof message !== "string") {
-    sse({ type: "error", message: "缺少 sessionId 或 message。" });
+    sse({ type: "error", message: "Missing sessionId or message." });
     sse({ type: "done" });
     return res.end();
   }
@@ -270,7 +270,7 @@ async function handleChat(req, res, body) {
     const widgetCall = toolCalls.find((t) => t && t.name === "show_widget");
 
     if (toolCalls.some((t) => t && t.name)) {
-      // 闭合工具调用：先 append 带 tool_calls 的 assistant 消息
+      // Widget lifecycle and state.
       messages.push({
         role: "assistant",
         content: assistantText || null,
@@ -282,7 +282,7 @@ async function handleChat(req, res, body) {
             function: { name: t.name, arguments: t.args },
           })),
       });
-      // 再为每个工具调用 append tool 结果（占位），否则 Moonshot 报 tool_call_id not found
+      // Widget lifecycle and state.
       for (const t of toolCalls) {
         if (!t || !t.id) continue;
         if (t.name === "show_widget") {
@@ -302,9 +302,9 @@ async function handleChat(req, res, body) {
         }
       }
       if (widgetCall) sse({ type: "widget_end" });
-      // 暂停本轮：等用户填写结果作为下一条 user message 回流
+      // Widget lifecycle and state.
     } else {
-      // 普通文本回复
+      // Widget lifecycle and state.
       messages.push({ role: "assistant", content: assistantText });
     }
 
@@ -318,7 +318,7 @@ async function handleChat(req, res, body) {
 }
 
 /* ====================================================================== *
- *  静态文件托管
+ *
  * ====================================================================== */
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -371,7 +371,7 @@ async function serveStatic(req, res, urlPath) {
 }
 
 /* ====================================================================== *
- *  HTTP 入口
+ *
  * ====================================================================== */
 const server = createServer((req, res) => {
   const url = req.url || "/";
@@ -386,17 +386,17 @@ const server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => {
       raw += c;
-      if (raw.length > 1e6) req.destroy(); // 防滥用
+      if (raw.length > 1e6) req.destroy();
     });
     req.on("end", () => {
       let body = {};
-      try { body = JSON.parse(raw || "{}"); } catch { /* 交给 handler 校验 */ }
+      try { body = JSON.parse(raw || "{}"); } catch {  }
       handleChat(req, res, body).catch((err) => {
         try {
           res.write("data: " + JSON.stringify({ type: "error", message: String(err) }) + "\n\n");
           res.write("data: " + JSON.stringify({ type: "done" }) + "\n\n");
           res.end();
-        } catch { /* 已断开 */ }
+        } catch {  }
       });
     });
     return;
@@ -408,15 +408,15 @@ const server = createServer((req, res) => {
   res.end("Method Not Allowed");
 });
 
-// 仅在直接运行时监听（被测试 import 时不启动服务）
+// Widget lifecycle and state.
 const isMain = import.meta.url === pathToFileURL(process.argv[1] || "").href;
 if (isMain) {
   server.listen(PORT, () => {
-    console.log("\n  Kimi Widget 运行中：");
+    console.log("\n  Show Widget running:");
     console.log("  → http://localhost:" + PORT);
-    console.log("  → 模型：" + MODEL + "  (" + BASE_URL + ")");
+    console.log("  → Model: " + MODEL + "  (" + BASE_URL + ")");
     console.log(
-      "  → 在线模式：" + (client ? "已就绪 ✅" : "未配置 API key（仅离线演示）⚠️  cp .env.example .env 并填入 MOONSHOT_API_KEY") + "\n"
+      "  → Online mode: " + (client ? "Ready ✅" : "API key missing (offline demo only). Set LLM_API_KEY in .env") + "\n"
     );
   });
 }
