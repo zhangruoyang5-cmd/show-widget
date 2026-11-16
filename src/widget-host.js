@@ -1,13 +1,13 @@
 /*
- * widget-host.js — 宿主页编排（运行在 index.html，非 iframe 内）
+ * Browser host for streamed interactive form widgets.
  * ------------------------------------------------------------------------------
- * 职责：
- *  - sanitizeWidgetCode：按 widget_code 契约清洗模型/示例产出的 HTML。
- *  - buildSrcdoc：把 设计系统 CSS + widget_code (+ widget.js) 拼成 iframe srcdoc。
- *  - 渲染 widget 气泡（含 loading、桌面内嵌 / 移动端全屏两种形态）。
- *  - 监听 iframe 的 postMessage（ready/height/submit/dismiss）。
- *  - 在线模式：POST /api/chat 读取 SSE 流，驱动文本与 widget 的流式渲染。
- *  - 离线模式：直接加载 widgets/*.html 示例，演示组件库与交互回路（无需 API key）。
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
 (function () {
   "use strict";
@@ -28,17 +28,17 @@
 
   var state = {
     mode: "offline", // 'offline' | 'online'
-    online: false, // 后端是否配置了 API key
+    online: false,
     sessionId: "sess-" + Math.random().toString(36).slice(2) + Date.now().toString(36),
     assets: { css: "", js: "" },
     busy: false,
   };
 
-  // iframe.contentWindow -> widget 控制器，供 postMessage 路由
+  // Widget lifecycle and state.
   var frameRegistry = new Map();
 
   /* ============================================================== *
-   *  资源加载
+ *
    * ============================================================== */
   function loadAssets() {
     return Promise.all([
@@ -58,7 +58,7 @@
   }
 
   /* ============================================================== *
-   *  widget_code 清洗（契约第 4 节）
+ *
    * ============================================================== */
   function sanitizeWidgetCode(html) {
     var violations = [];
@@ -77,7 +77,7 @@
 
     if (violations.length) {
       console.warn(
-        "[widget sanitize] 移除了违反 widget_code 契约的内容：",
+        "[widget sanitize] Removed content that violates the widget HTML contract:",
         violations.join(", ")
       );
     }
@@ -85,7 +85,7 @@
   }
 
   /* ============================================================== *
-   *  srcdoc 组装
+ *
    * ============================================================== */
   function buildSrcdoc(widgetCode, interactive) {
     var clean = sanitizeWidgetCode(widgetCode);
@@ -103,7 +103,7 @@
   function makeFrame(widgetCode, interactive) {
     var iframe = document.createElement("iframe");
     iframe.className = "widget-frame";
-    iframe.setAttribute("sandbox", "allow-scripts"); // 无 allow-same-origin：不可访问宿主
+    iframe.setAttribute("sandbox", "allow-scripts");
     iframe.setAttribute("scrolling", "no");
     iframe.style.height = "120px";
     iframe.srcdoc = buildSrcdoc(widgetCode, interactive);
@@ -111,7 +111,7 @@
   }
 
   /* ============================================================== *
-   *  DOM 辅助 / 消息气泡
+ *
    * ============================================================== */
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -128,7 +128,7 @@
 
   function addMessage(role, text) {
     var row = el("div", "msg " + role);
-    var avatar = el("div", "avatar", role === "user" ? "你" : "K");
+    var avatar = el("div", "avatar", role === "user" ? "You" : "W");
     var bubble = el("div", "bubble");
     bubble.textContent = text || "";
     row.appendChild(avatar);
@@ -156,30 +156,30 @@
   }
 
   /* ============================================================== *
-   *  widget 气泡控制器（桌面内嵌 / 移动全屏）
+ *
    * ============================================================== */
   function createWidgetBubble(title) {
     var row = el("div", "msg widget");
     var shell = el("div", "widget-shell");
 
-    // loading 占位
+    // Widget lifecycle and state.
     var loading = el("div", "widget-loading widget-inline");
     var spinner = el("div", "spinner");
     var loadingText = el("span", "loading-text");
-    loadingText.textContent = "准备表单…";
+    loadingText.textContent = "Preparing form…";
     loading.appendChild(spinner);
     loading.appendChild(loadingText);
 
-    // 桌面：内嵌容器
+    // Widget lifecycle and state.
     var inlineHost = el("div", "widget-inline");
 
-    // 移动：启动按钮
+    // Widget lifecycle and state.
     var launch = el("button", "widget-launch");
     launch.type = "button";
     launch.innerHTML =
       '<span class="lw-icon">▤</span><span><div class="lw-title"></div>' +
-      '<div class="lw-sub">点击填写表单</div></span>';
-    launch.querySelector(".lw-title").textContent = title || "请填写";
+      '<div class="lw-sub">Open the form</div></span>';
+    launch.querySelector(".lw-title").textContent = title || "Fill in the form";
     launch.disabled = true;
 
     shell.appendChild(loading);
@@ -208,10 +208,10 @@
       }, 1400);
     }
 
-    // 必须在 frame 连接到 DOM 后「同步」注册路由：iframe 内 widget.js 会在自己的
-    // DOMContentLoaded 即 postMessage 上报高度，这早于宿主 iframe 的 load 事件。
-    // 若改在 load 里注册，首个高度消息会因 frameRegistry 尚无该 source 而被丢弃，
-    // iframe 卡在默认 120px —— 表现为「只渲染一半，点一下就无法再交互」。
+    // Widget lifecycle and state.
+    // Widget lifecycle and state.
+    // Widget lifecycle and state.
+    // Widget lifecycle and state.
     function registerFrame(frame) {
       if (frame && frame.contentWindow) frameRegistry.set(frame.contentWindow, controller);
     }
@@ -220,7 +220,7 @@
       if (iframe && iframe.contentWindow) frameRegistry.delete(iframe.contentWindow);
       iframe = frame;
       if (IS_MOBILE.matches) {
-        // 移动端：iframe 此刻尚未入 DOM，待点击启动按钮放进全屏遮罩后再注册
+        // Widget lifecycle and state.
         launch.disabled = false;
         launch.onclick = function () { openOverlay(frame); registerFrame(frame); };
       } else {
@@ -230,9 +230,9 @@
     }
 
     var controller = {
-      // 流式预览（非交互，仅展示生成中的 HTML）
+      // Widget lifecycle and state.
       preview: function (widgetCode) {
-        if (done || IS_MOBILE.matches) return; // 移动端不做流式预览
+        if (done || IS_MOBILE.matches) return;
         if (!iframe || iframe.dataset.interactive === "1") {
           var f = makeFrame(widgetCode, false);
           loading.style.display = "none";
@@ -242,7 +242,7 @@
           iframe.srcdoc = buildSrcdoc(widgetCode, false);
         }
       },
-      // 渲染最终交互版
+      // Widget lifecycle and state.
       mount: function (widgetCode) {
         clearInterval(loadingTimer);
         loading.style.display = "none";
@@ -271,9 +271,9 @@
         clearInterval(loadingTimer);
         if (iframe && iframe.contentWindow) frameRegistry.delete(iframe.contentWindow);
         closeOverlay();
-        // 把 widget 折叠为一条简短系统提示，避免占用空间
+        // Widget lifecycle and state.
         row.remove();
-        addSystemNote(dismissed ? "（已跳过表单）" : "（已提交表单）");
+        addSystemNote(dismissed ? "(Form skipped)" : "(Form submitted)");
         if (resultCb) resultCb(text, dismissed);
       },
     };
@@ -282,7 +282,7 @@
   }
 
   /* ============================================================== *
-   *  移动端全屏遮罩
+ *
    * ============================================================== */
   function openOverlay(frame) {
     dom.overlaySheet.innerHTML = "";
@@ -301,7 +301,7 @@
   });
 
   /* ============================================================== *
-   *  postMessage 路由（来自 iframe 内 widget.js）
+ *
    * ============================================================== */
   window.addEventListener("message", function (e) {
     var ctrl = frameRegistry.get(e.source);
@@ -322,7 +322,7 @@
   });
 
   /* ============================================================== *
-   *  在线模式：SSE 流
+ *
    * ============================================================== */
   function setBusy(b) {
     state.busy = b;
@@ -389,9 +389,9 @@
             case "widget_start":
               if (assistantMsg) assistantMsg.setTyping(false);
               widget = createWidgetBubble(evt.title);
-              widget.controller.loading(evt.loading_messages || ["生成表单…"]);
+              widget.controller.loading(evt.loading_messages || ["Building form…"]);
               widget.controller.onResult(function (text) {
-                // 用户填写结果作为下一条 user message 回流
+                // Widget lifecycle and state.
                 sendOnline(text, true);
               });
               widgetCode = "";
@@ -404,7 +404,7 @@
               if (widget) widget.controller.mount(widgetCode);
               break;
             case "error":
-              addSystemNote("⚠️ 出错：" + (evt.message || "unknown"));
+              addSystemNote("⚠️ Error: " + (evt.message || "unknown"));
               break;
             case "done":
               break;
@@ -419,38 +419,38 @@
       })
       .catch(function (err) {
         if (assistantMsg) assistantMsg.setTyping(false);
-        addSystemNote("⚠️ 请求失败：" + err.message + "（在线模式需要后端配置 MOONSHOT_API_KEY）");
+        addSystemNote("⚠️ Request failed: " + err.message + "(online mode requires LLM_API_KEY on the server)");
         setBusy(false);
       });
   }
 
   /* ============================================================== *
-   *  离线模式：本地示例 widget
+ *
    * ============================================================== */
   var SCENARIOS = {
     travel: {
-      label: "✈️ 规划一次东京旅行",
+      label: "✈️ Plan a trip to Tokyo",
       file: "widgets/travel.html",
       title: "Plan your trip",
-      intro: "好的，我先确认几个关键偏好，这样规划出来的行程更贴合你 👇",
-      loading: ["读取你的需求…", "搭建偏好表单…", "马上好…"],
-      after: "收到！我会按你选的目的地、兴趣、出发日期和预算来规划行程。",
+      intro: "Before planning, let me confirm a few key preferences 👇",
+      loading: ["Reading your request…", "Creating preference form…", "Almost ready…"],
+      after: "Got it! I can plan around your destination, interests, dates, and budget.",
     },
     preferences: {
-      label: "🎧 收集我的内容偏好",
+      label: "🎧 Set content preferences",
       file: "widgets/preferences.html",
       title: "Your preferences",
-      intro: "为了更懂你的口味，先花十秒选几项 👇",
-      loading: ["整理选项…", "搭建表单…"],
-      after: "好的，已记录你的偏好，后续推荐会据此调整。",
+      intro: "Choose a few options so I can tailor the suggestions 👇",
+      loading: ["Organizing options…", "Building form…"],
+      after: "Got it! Future suggestions can follow these preferences.",
     },
     feedback: {
-      label: "⭐ 给这次体验打个分",
+      label: "⭐ Rate this experience",
       file: "widgets/feedback.html",
       title: "Quick feedback",
-      intro: "想听听你的反馈，几个小问题 👇",
-      loading: ["准备问卷…"],
-      after: "感谢反馈！这对我们改进很有帮助。",
+      intro: "We'd love your feedback. Just a few quick questions 👇",
+      loading: ["Preparing survey…"],
+      after: "Thanks for your feedback! It helps us improve.",
     },
   };
 
@@ -469,20 +469,20 @@
         widget.controller.loading(s.loading);
         widget.controller.onResult(function (text, dismissed) {
           addMessage("user", text);
-          addMessage("assistant", dismissed ? "没问题，我先按通用思路继续。" : s.after);
+          addMessage("assistant", dismissed ? "No problem. I'll continue with general assumptions." : s.after);
           setBusy(false);
         });
-        // 模拟流式：稍作延迟再渲染
+        // Widget lifecycle and state.
         setTimeout(function () { widget.controller.mount(code); }, 700);
       })
       .catch(function (err) {
-        addSystemNote("⚠️ 加载示例失败：" + err.message);
+        addSystemNote("⚠️ Failed to load example: " + err.message);
         setBusy(false);
       });
   }
 
   /* ============================================================== *
-   *  输入与模式切换
+ *
    * ============================================================== */
   function submitComposer() {
     var text = dom.composer.value.trim();
@@ -494,7 +494,7 @@
     } else {
       addMessage("user", text);
       addSystemNote(
-        '离线演示模式下不调用模型。点击下方场景按钮体验 widget；或切到「在线」模式（需后端配置 API key）与真实模型对话。'
+        'Offline demo does not call a model. Choose a scenario below to try a widget, or switch to Online mode after configuring a server API key.'
       );
       dom.suggestions.classList.remove("hidden");
     }
@@ -507,7 +507,7 @@
 
   function setMode(mode) {
     if (mode === "online" && !state.online) {
-      addSystemNote("在线模式不可用：后端未检测到 MOONSHOT_API_KEY。已留在离线模式。");
+      addSystemNote("Online mode is unavailable: the server has no LLM_API_KEY. Staying in offline mode.");
       return;
     }
     state.mode = mode;
@@ -516,20 +516,20 @@
     dom.suggestions.classList.toggle("hidden", mode === "online");
     dom.composer.placeholder =
       mode === "online"
-        ? "和 Kimi 说点什么，例如「帮我规划一次东京旅行」…"
-        : "离线演示：点下方场景按钮，或在此输入查看说明…";
+        ? "Ask the assistant something, e.g. 'Help me plan a trip to Tokyo'…"
+        : "Offline demo: choose a scenario below, or type to see instructions…";
   }
 
   function updateStatus() {
     if (state.online) {
-      dom.status.innerHTML = '<span class="status-dot ok"></span>后端已就绪（在线模式可用）';
+      dom.status.innerHTML = '<span class="status-dot ok"></span>Server ready (online mode available)';
     } else {
-      dom.status.innerHTML = '<span class="status-dot warn"></span>未配置 API key（仅离线模式）';
+      dom.status.innerHTML = '<span class="status-dot warn"></span>API key missing (offline mode only)';
     }
   }
 
   /* ============================================================== *
-   *  初始化
+ *
    * ============================================================== */
   function bindUI() {
     dom.send.addEventListener("click", submitComposer);
@@ -544,7 +544,7 @@
     });
   }
 
-  // 渲染场景按钮
+  // Widget lifecycle and state.
   function renderSuggestions() {
     dom.suggestions.innerHTML = "";
     Object.keys(SCENARIOS).forEach(function (key) {
@@ -560,13 +560,13 @@
   bindUI();
   addMessage(
     "assistant",
-    "你好，我是 Kimi。当任务需要确认偏好或收集结构化信息时，我会弹出一个可点选的小表单（widget），省去你来回打字。\n\n下面是几个示例场景，点一下就能体验 👇"
+    "Hi! I'm your AI assistant. When a task needs structured preferences, I can show a quick interactive form instead of asking several questions.\n\nTry one of these examples 👇"
   );
 
   Promise.all([loadAssets(), probeBackend()]).then(function () {
     updateStatus();
     if (state.online) {
-      // 默认仍停在离线场景演示，但允许切到在线
+      // Widget lifecycle and state.
       setMode("offline");
     } else {
       setMode("offline");
