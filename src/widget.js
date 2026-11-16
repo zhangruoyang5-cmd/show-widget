@@ -1,12 +1,12 @@
 /*
- * widget.js — iframe 侧交互代理 + 序列化（宿主注入到每个 widget 的 sandboxed iframe）
+ * Sandboxed iframe interaction and form serialization.
  * ------------------------------------------------------------------------------
- * widget_code 本身只有静态 HTML（禁止 <script>/onclick）。所有交互都由本脚本
- * 依据 class 与 data-* 属性代理处理，结果通过 postMessage 回传宿主页：
- *   { type: 'widget:ready' }              渲染完成
- *   { type: 'widget:height', height }     高度变化（让宿主调整 iframe）
- *   { type: 'widget:submit', text }       用户提交，text 为序列化 bullet 列表
- *   { type: 'widget:dismiss', text }      用户跳过/关闭，text 为固定文案
+ *
+ *
+ *
+ *
+ *
+ *
  */
 (function () {
   "use strict";
@@ -15,18 +15,18 @@
     "(Form dismissed: use your best judgment or just ask me directly)";
 
   function post(msg) {
-    // 沙箱 iframe 为 opaque origin，用 '*'；宿主侧以 event.source 校验来源。
+    // Widget lifecycle and state.
     parent.postMessage(msg, "*");
   }
 
-  /* ---------- 数值格式化（千分位） ---------- */
+  /* Widget implementation details */
   function formatThousands(v) {
     var n = Number(String(v).replace(/,/g, ""));
     if (!isFinite(n)) return v;
     return n.toLocaleString("en-US");
   }
 
-  /* ---------- 胶囊（单选 / 多选） ---------- */
+  /* Widget implementation details */
   function syncPills(container) {
     var multi = container.getAttribute("data-multi") === "true";
     var selected = Array.prototype.slice
@@ -54,11 +54,11 @@
         }
         syncPills(container);
       });
-      syncPills(container); // 初始化（支持 widget_code 预选 .selected）
+      syncPills(container);
     });
   }
 
-  /* ---------- 滑块实时显示 ---------- */
+  /* Widget implementation details */
   function wireRanges() {
     var ranges = document.querySelectorAll(".clarify-range input[type='range']");
     Array.prototype.forEach.call(ranges, function (input) {
@@ -72,7 +72,7 @@
     });
   }
 
-  /* ---------- 序列化 ---------- */
+  /* Widget implementation details */
   function readValue(el) {
     var tag = el.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
@@ -94,7 +94,7 @@
     return "Form submitted:\n" + lines.join("\n");
   }
 
-  /* ---------- 提交 / 跳过 ---------- */
+  /* Widget implementation details */
   function wireActions() {
     document.addEventListener("click", function (e) {
       var t = e.target.closest ? e.target.closest("button") : null;
@@ -110,12 +110,12 @@
         post({ type: "widget:dismiss", text: DISMISS_TEXT });
       }
     });
-    // 阻止表单原生提交（widget_code 用 <form>，回车不应刷新）
+    // Widget lifecycle and state.
     var form = document.querySelector("form.clarify");
     if (form) form.addEventListener("submit", function (e) { e.preventDefault(); });
   }
 
-  /* ---------- 高度上报 ---------- */
+  /* Widget implementation details */
   function reportHeight() {
     var h = Math.ceil(
       Math.max(
