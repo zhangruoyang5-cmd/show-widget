@@ -4,7 +4,7 @@ This repository is a reference demo, **not a production-ready hosted service**.
 
 ## Local-only by default
 
-- Keep `MOONSHOT_API_KEY` in a server-side environment variable or an ignored `.env` file. Never put credentials in frontend code.
+- Keep `LLM_API_KEY` in a server-side environment variable or an ignored `.env` file. Never put credentials in frontend code.
 - The static server serves only a small explicit allowlist of demo assets; URLs such as `/.env`, `/server.js`, and `/package.json` must return 404.
 - Do not expose the demo `/api/chat` endpoint to unauthenticated Internet traffic. Before a public deployment, add authentication, per-user quotas, rate limiting, request validation, session lifecycle/expiry, abuse monitoring, and billing safeguards.
 - Generated form HTML is untrusted. The demo uses a sandboxed iframe; keep sandbox restrictions, strengthen HTML sanitization and Content Security Policy before integrating with third-party sites.
