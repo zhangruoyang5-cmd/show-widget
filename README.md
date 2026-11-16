@@ -1,4 +1,4 @@
-# Kimi Widget
+# Show Widget
 
 > 在 AI 对话流中内嵌**可交互的澄清表单**：模型通过 `show_widget` 工具产出纯 HTML，宿主在 sandboxed iframe 中渲染，用户点选/滑动后，结果被序列化为下一条 user message 回流给模型继续生成 —— 用「点选」替代多轮「打字」。
 
