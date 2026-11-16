@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Local env (contains your MOONSHOT_API_KEY — never commit)
+# Local env (contains your LLM_API_KEY — never commit)
 .env
 
 # Logs
