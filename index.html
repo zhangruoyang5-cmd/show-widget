@@ -1,41 +1,41 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Kimi Widget · 对话内嵌澄清表单演示</title>
+    <title>Show Widget · Interactive clarification forms</title>
     <link rel="stylesheet" href="src/app.css" />
   </head>
   <body>
     <div class="app">
-      <!-- 顶栏 -->
+      <!-- Header -->
       <header class="app-header">
-        <div class="app-logo">K</div>
+        <div class="app-logo">W</div>
         <div>
-          <div class="app-title">Kimi Widget</div>
-          <div class="app-subtitle" id="status">检测后端中…</div>
+          <div class="app-title">Show Widget</div>
+          <div class="app-subtitle" id="status">Checking server…</div>
         </div>
         <div class="spacer"></div>
-        <div class="mode-toggle" role="tablist" aria-label="对话模式">
-          <button id="mode-offline" class="active" type="button">离线演示</button>
-          <button id="mode-online" type="button">在线（真模型）</button>
+        <div class="mode-toggle" role="tablist" aria-label="Conversation mode">
+          <button id="mode-offline" class="active" type="button">Offline demo</button>
+          <button id="mode-online" type="button">Online (AI)</button>
         </div>
       </header>
 
-      <!-- 消息区 -->
+      <!-- Conversation -->
       <main class="messages" id="messages" aria-live="polite"></main>
 
-      <!-- 场景建议 -->
+      <!-- Suggested scenarios -->
       <div class="suggestions" id="suggestions"></div>
 
-      <!-- 输入栏 -->
+      <!-- Message composer -->
       <footer class="composer">
         <textarea
           id="composer-input"
           rows="1"
-          placeholder="离线演示：点下方场景按钮，或在此输入查看说明…"
+          placeholder="Offline demo: choose a scenario below, or type to see instructions…"
         ></textarea>
-        <button class="send-btn" id="send-btn" type="button" aria-label="发送">
+        <button class="send-btn" id="send-btn" type="button" aria-label="Send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 2 11 13" />
@@ -45,7 +45,7 @@
       </footer>
     </div>
 
-    <!-- 移动端全屏遮罩（widget 在此承载） -->
+    <!-- Mobile fullscreen widget overlay -->
     <div class="overlay" id="overlay">
       <div class="overlay-sheet" id="overlay-sheet"></div>
     </div>
