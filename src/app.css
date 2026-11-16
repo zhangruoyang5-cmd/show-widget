@@ -1,6 +1,6 @@
 /*
- * Kimi Widget — 宿主页（chat UI）外壳样式
- * 仅作用于演示页 index.html，不进入 widget 的 iframe。
+ * Chat shell styles for the demo page, not for sandboxed widgets.
+ *
  */
 
 :root {
@@ -42,7 +42,7 @@ html, body {
   border-right: 1px solid var(--border);
 }
 
-/* ============================ 顶栏 ============================ */
+/* Layout and component styles */
 .app-header {
   flex: none;
   display: flex;
@@ -64,7 +64,7 @@ html, body {
 .app-subtitle { font-size: 12px; color: var(--muted); }
 .app-header .spacer { flex: 1; }
 
-/* 模式开关 */
+/* Layout and component styles */
 .mode-toggle {
   display: inline-flex;
   background: var(--bg);
@@ -87,7 +87,7 @@ html, body {
 .status-dot.ok { background: #2bb673; }
 .status-dot.warn { background: #e8a23d; }
 
-/* ============================ 消息区 ============================ */
+/* Layout and component styles */
 .messages {
   flex: 1;
   overflow-y: auto;
@@ -136,7 +136,7 @@ html, body {
   max-width: 100%;
 }
 
-/* 打字光标 */
+/* Layout and component styles */
 .cursor::after {
   content: "▋";
   margin-left: 1px;
@@ -145,11 +145,11 @@ html, body {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* ============================ widget 气泡 ============================ */
+/* Layout and component styles */
 .msg.widget { display: block; }
 .widget-shell {
   max-width: 92%;
-  margin-left: 40px; /* 对齐 assistant 气泡（avatar 30 + gap 10） */
+  margin-left: 40px;
 }
 .widget-frame {
   width: 100%;
@@ -160,7 +160,7 @@ html, body {
   transition: height 0.18s ease;
 }
 
-/* loading 占位 */
+/* Layout and component styles */
 .widget-loading {
   display: flex;
   align-items: center;
@@ -183,7 +183,7 @@ html, body {
 .widget-loading .loading-text { animation: fade 0.4s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(2px); } }
 
-/* 移动端：气泡内只显示启动按钮 */
+/* Layout and component styles */
 .widget-launch {
   display: none;
   align-items: center;
@@ -205,7 +205,7 @@ html, body {
 .widget-launch .lw-title { font-weight: 650; font-size: 14.5px; }
 .widget-launch .lw-sub { font-size: 12.5px; color: var(--muted); }
 
-/* ============================ 建议场景 ============================ */
+/* Layout and component styles */
 .suggestions {
   flex: none;
   display: flex;
@@ -224,7 +224,7 @@ html, body {
 }
 .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
-/* ============================ 输入栏 ============================ */
+/* Layout and component styles */
 .composer {
   flex: none;
   display: flex;
@@ -258,7 +258,7 @@ html, body {
 .send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .send-btn svg { width: 18px; height: 18px; }
 
-/* ============================ 移动端全屏遮罩 ============================ */
+/* Layout and component styles */
 .overlay {
   position: fixed;
   inset: 0;
@@ -282,7 +282,7 @@ html, body {
 @keyframes slideup { from { transform: translateY(100%); } }
 .overlay-frame { width: 100%; border: none; display: block; }
 
-/* 窄屏：内嵌 widget 改为启动按钮 */
+/* Layout and component styles */
 @media (max-width: 640px) {
   .app { border: none; }
   .widget-shell { margin-left: 0; max-width: 100%; }
