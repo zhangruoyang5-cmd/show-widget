@@ -330,15 +330,35 @@ const MIME = {
   ".ico": "image/x-icon",
 };
 
+// Explicit public-asset allowlist: never expose .env, source maps, package files or backend code.
+// The reference demo is not a production-ready public API (see SECURITY.md).
+const PUBLIC_ASSETS = new Set([
+  "/index.html",
+  "/src/app.css",
+  "/src/design-system.css",
+  "/src/widget-host.js",
+  "/src/widget.js",
+  "/widgets/feedback.html",
+  "/widgets/preferences.html",
+  "/widgets/travel.html",
+]);
+
 async function serveStatic(req, res, urlPath) {
-  let rel = decodeURIComponent(urlPath.split("?")[0]);
-  if (rel === "/" || rel === "") rel = "/index.html";
-  // 防目录穿越
-  const filePath = path.join(__dirname, path.normalize(rel).replace(/^(\.\.[/\\])+/, ""));
-  if (!filePath.startsWith(__dirname)) {
-    res.writeHead(403).end("Forbidden");
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(urlPath, "http://localhost").pathname);
+  } catch {
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Bad request");
     return;
   }
+  if (pathname === "/") pathname = "/index.html";
+  if (!PUBLIC_ASSETS.has(pathname)) {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+    return;
+  }
+  const filePath = path.join(__dirname, pathname.slice(1));
   try {
     const data = await readFile(filePath);
     const ext = path.extname(filePath).toLowerCase();
